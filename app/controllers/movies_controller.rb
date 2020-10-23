@@ -11,7 +11,8 @@ class MoviesController < ApplicationController
   
     #not comming from routed link w/params
     if (params[:ratings].nil? and params[:sort].nil?)
-      #No updates; rely on session saved values
+      #No updates; redirect and restore vals
+      redirect_to movies_path({sort: session[:sort], ratings: session[:ratings]})
     else
       session[:ratings] = params[:ratings]
       session[:sort] = params[:sort].nil? ? session[:sort] : params[:sort]
