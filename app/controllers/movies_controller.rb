@@ -1,6 +1,5 @@
 class MoviesController < ApplicationController
   
-  
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -9,9 +8,17 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    @ratings_to_show = params[:ratings].nil? ? [] : params[:ratings].keys
+  
+    #not comming from routed link w/params
+    if (params[:ratings].nil? and params[:sort].nil?)
+      #No updates; rely on session saved values
+    else
+      session[:ratings] = params[:ratings]
+      session[:sort] = params[:sort].nil? ? session[:sort] : params[:sort]
+    end
+    @ratings_to_show = session[:ratings].nil? ? [] : session[:ratings].keys
     @ratings_hash = Hash[@ratings_to_show.map {|x| [x, 1]}]
-    @sort = params[:sort]
+    @sort = session[:sort]
     if @sort.nil?
       @movies = Movie.with_ratings(@ratings_to_show)
     else
@@ -34,6 +41,7 @@ class MoviesController < ApplicationController
   end
 
   def update
+    session.clear
     @movie = Movie.find params[:id]
     @movie.update_attributes!(movie_params)
     flash[:notice] = "#{@movie.title} was successfully updated."
